@@ -1,0 +1,35 @@
+{
+  "name": "planning-backend",
+  "version": "1.0.0",
+  "description": "Node Express Backend API for planning",
+  "main": "dist/index.js",
+  "repository": "https://github.com/brianignacio5/planning-backend",
+  "author": "Brian Ignacio",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "@types/express": "^4.17.7",
+    "@types/express-session": "^1.17.0",
+    "@types/node": "^14.0.23",
+    "@types/passport": "^1.0.4",
+    "@types/passport-github": "^1.1.5",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.6"
+  },
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "start": "ts-node dist/index.js",
+    "build": "tsc -p ."
+  },
+  "dependencies": {
+    "@types/bcrypt": "^3.0.0",
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/mongoose": "^5.7.31",
+    "bcrypt": "^5.0.0",
+    "express-session": "^1.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.24",
+    "passport": "^0.4.1",
+    "passport-github": "^1.1.0"
+  }
+}
