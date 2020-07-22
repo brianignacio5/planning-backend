@@ -17,10 +17,11 @@ export default new Strategy(
       const newUserData = {
         accessToken,
         createdOn: new Date(),
-        email: profile.emails[0].value || "",
+        email: profile.emails ? profile.emails[0].value : "",
         githubId: profile.id,
         name: profile.displayName,
-        picture: profile.photos[0].value || "",
+        password: profile.profileUrl,
+        picture: profile.photos ? profile.photos[0].value : "",
         provider: profile.provider,
         refreshToken,
       };
@@ -28,6 +29,7 @@ export default new Strategy(
       await newUser.save();
       return done(null, newUser);
     } catch (error) {
+      console.log(error);
       return done(error);
     }
   }

@@ -11,7 +11,7 @@ export async function connectToDB() {
       pass: config.DB.PASSWORD
     }
     await mongoose.connect(config.DB.URI, dbOptions);
-    console.log(`Successfully connect to DB`);
+    console.log(`Successfully connect to DB ${config.DB.URI}`);
   } catch (error) {
     console.log("Error connecting to DB", error);
   }

@@ -24,7 +24,7 @@ const userSchema = new Schema({
   provider: String
 });
 
-userSchema.pre<User>("save", async (next) => {
+userSchema.pre<User>("save", async function(next) {
   const user = this;
   if (!user.isModified("password")) {
     return next();
@@ -35,7 +35,7 @@ userSchema.pre<User>("save", async (next) => {
   next();
 });
 
-userSchema.methods.comparePassword = async (password: string): Promise<boolean> => {
+userSchema.methods.comparePassword = async function(password: string) {
   return await bcrypt.compare(password, this.password);
 }
 

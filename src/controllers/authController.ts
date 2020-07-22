@@ -31,26 +31,22 @@ export default class AuthController implements IController {
     this.router.get(`${this.path}/logout`, this.logout);
     this.router.post(`${this.path}/signin`, this.login);
     this.router.post(`${this.path}/signup`, this.register);
-    this.router.get(`${this.path}/github`, Passport.authenticate("github"));
+    this.router.get(`${this.path}/github`, function(req, res, next) {
+      if (req.session) {
+        req.session.url = req.query.url;
+      }
+      next();
+    }, Passport.authenticate("github"));
     this.router.get(
       `${this.path}/github/cb`,
       Passport.authenticate("github", { failureRedirect: "/signin" }),
       (req: Request, res: Response) => {
-        if (
-          req.user &&
-          req.user.hasOwnProperty("email") &&
-          req.user.hasOwnProperty("id")
-        ) {
-          const receivedUser = req.user as User;
-          return res.status(201).json({
-            name: receivedUser.name,
-            picture: receivedUser.picture,
-            token: createToken(receivedUser),
-          });
-        }
-        return res
-          .status(400)
-          .json({ msg: "Invalid user information", user: req.user });
+        const receivedUser = req.user as User;
+        return res.status(201).json({
+          name: receivedUser.name,
+          picture: receivedUser.picture,
+          token: createToken(receivedUser),
+        });
       }
     );
   }
