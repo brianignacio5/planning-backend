@@ -12,7 +12,7 @@ function createToken(user: User) {
       accessToken: user.accessToken,
       email: user.email,
       githubId: user.githubId,
-      id: user.id,
+      id: user._id,
       refreshToken: user.refreshToken,
     },
     config.jwtSecret,
@@ -39,14 +39,16 @@ export default class AuthController implements IController {
     }, Passport.authenticate("github"));
     this.router.get(
       `${this.path}/github/cb`,
-      Passport.authenticate("github", { failureRedirect: "/signin" }),
+      Passport.authenticate("github", { failureRedirect: "/" }),
       (req: Request, res: Response) => {
         const receivedUser = req.user as User;
-        return res.status(201).json({
+        const planningJwt = {
           name: receivedUser.name,
           picture: receivedUser.picture,
           token: createToken(receivedUser),
-        });
+        };
+        res.cookie("planningJwt", JSON.stringify(planningJwt));
+        return res.redirect("http://localhost:8080/");
       }
     );
   }
@@ -95,6 +97,6 @@ export default class AuthController implements IController {
   };
 
   private redirectHome = (req: Request, res: Response) => {
-    return res.redirect("/");
+    return res.sendFile(process.cwd() + "/views/login.html");
   };
 }

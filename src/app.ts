@@ -8,6 +8,7 @@ import session from "express-session";
 import githubStrategy from "./middleware/githubStrategy";
 import config from "./config/config";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 class PlanningApp {
   public App: Application;
@@ -22,11 +23,13 @@ class PlanningApp {
 
   config() {
     const corsOptions: cors.CorsOptions = {
-      origin: "*"
+      origin: true,
+      credentials: true
     }
-    this.App.use(cors());
+    this.App.use(cors(corsOptions));
     this.App.use(express.json());
     this.App.use(express.urlencoded({ extended: false }));
+    this.App.use(express.static(process.cwd() + "/public"));
   }
 
   setRoutes(controllers: IController[]){
@@ -41,13 +44,15 @@ class PlanningApp {
   }
 
   setPassport() {
+    this.App.use(cookieParser());
     this.App.use(session({
       secret: config.jwtSecret,
       resave: true,
       saveUninitialized: true,
+      cookie: {
+        domain: "localhost"
+      }
     }));
-    this.App.use(Passport.initialize());
-    this.App.use(Passport.session());
     Passport.use(githubStrategy);
     Passport.serializeUser(function(user, done) {
       done(null, user);
@@ -56,6 +61,8 @@ class PlanningApp {
     Passport.deserializeUser(function(user, done) {
       done(null, user);
     });
+    this.App.use(Passport.initialize());
+    this.App.use(Passport.session());
   }
 
   async start(port: number) {
