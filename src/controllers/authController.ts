@@ -31,25 +31,37 @@ export default class AuthController implements IController {
     this.router.get(`${this.path}/logout`, this.logout);
     this.router.post(`${this.path}/signin`, this.login);
     this.router.post(`${this.path}/signup`, this.register);
-    this.router.get(`${this.path}/github`, function(req, res, next) {
-      if (req.session) {
-        req.session.url = req.query.url;
-      }
-      next();
-    }, Passport.authenticate("github"));
+    this.router.get(
+      `${this.path}/github`,
+      this.saveUrlMiddleware,
+      Passport.authenticate("github")
+    );
+    this.router.get(
+      `${this.path}/google`,
+      this.saveUrlMiddleware,
+      Passport.authenticate("google", { scope: ["email", "profile"] })
+    );
+    this.router.get(
+      `${this.path}/linkedin`,
+      this.saveUrlMiddleware,
+      Passport.authenticate("linkedin", {
+        scope: ["r_emailaddress", "r_liteprofile"],
+      })
+    );
     this.router.get(
       `${this.path}/github/cb`,
-      Passport.authenticate("github", { failureRedirect: "/" }),
-      (req: Request, res: Response) => {
-        const receivedUser = req.user as User;
-        const planningJwt = {
-          name: receivedUser.name,
-          picture: receivedUser.picture,
-          token: createToken(receivedUser),
-        };
-        res.cookie("planningJwt", JSON.stringify(planningJwt));
-        return res.redirect("http://localhost:8080/");
-      }
+      Passport.authenticate("github", { failureRedirect: this.path }),
+      this.oauthCallback
+    );
+    this.router.get(
+      `${this.path}/google/cb`,
+      Passport.authenticate("google", { failureRedirect: this.path }),
+      this.oauthCallback
+    );
+    this.router.get(
+      `${this.path}/linkedin/cb`,
+      Passport.authenticate("linkedin", { failureRedirect: this.path }),
+      this.oauthCallback
     );
   }
 
@@ -68,7 +80,13 @@ export default class AuthController implements IController {
 
     const newUser = new userModel(req.body);
     await newUser.save();
-    return res.status(201).json(newUser);
+    const planningJwt = {
+      name: newUser.email,
+      picture: newUser.picture,
+      token: createToken(newUser),
+    };
+    res.cookie("planningJwt", JSON.stringify(planningJwt));
+    return res.redirect(config.FRONTEND_URL);
   };
 
   private login = async (req: Request, res: Response) => {
@@ -82,13 +100,26 @@ export default class AuthController implements IController {
 
     const isMatch = await user.comparePassword(req.body.password);
     if (isMatch) {
-      return res.status(201).json({
-        name: user.name,
+      const planningJwt = {
+        name: user.name || user.email,
         picture: user.picture,
         token: createToken(user),
-      });
+      };
+      res.cookie("planningJwt", JSON.stringify(planningJwt));
+      return res.redirect(config.FRONTEND_URL);
     }
     return res.status(400).json({ msg: "Email or password are incorrect" });
+  };
+
+  private oauthCallback = async (req: Request, res: Response) => {
+    const receivedUser = req.user as User;
+    const planningJwt = {
+      name: receivedUser.name,
+      picture: receivedUser.picture,
+      token: createToken(receivedUser),
+    };
+    res.cookie("planningJwt", JSON.stringify(planningJwt));
+    return res.redirect(config.FRONTEND_URL);
   };
 
   private logout = async (req: Request, res: Response) => {
@@ -98,5 +129,16 @@ export default class AuthController implements IController {
 
   private redirectHome = (req: Request, res: Response) => {
     return res.sendFile(process.cwd() + "/views/login.html");
+  };
+
+  private saveUrlMiddleware = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    if (req.session) {
+      req.session.url = req.query.url;
+    }
+    next();
   };
 }

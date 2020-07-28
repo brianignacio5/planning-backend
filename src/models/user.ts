@@ -11,15 +11,11 @@ const userSchema = new Schema({
     trim: true,
     type: String,
   },
-  githubId: {
-    type: String,
-    unique: true,
-  },
+  linkedInId: String,
+  githubId: String,
+  googleId: String,
   name: String,
-  password: {
-    type: String,
-    required: true
-  },
+  password: String,
   picture: String,
   provider: String
 });

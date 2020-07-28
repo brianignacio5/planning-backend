@@ -5,7 +5,9 @@ export interface User extends Document {
   comparePassword: (password: string) => Promise<Boolean>;
   createdOn: Date;
   email: string;
-  githubId: string,
+  linkedInId: string; 
+  githubId: string;
+  googleId: string;
   id: string;
   name: string;
   password: string;

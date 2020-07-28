@@ -29,13 +29,6 @@
   dependencies:
     "@types/node" "*"
 
-"@types/cookie-parser@^1.4.2":
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/@types/cookie-parser/-/cookie-parser-1.4.2.tgz#e4d5c5ffda82b80672a88a4281aaceefb1bd9df5"
-  integrity sha512-uwcY8m6SDQqciHsqcKDGbo10GdasYsPCYkH3hVegj9qAah6pX5HivOnOuI3WYmyQMnOATV39zv/Ybs0bC/6iVg==
-  dependencies:
-    "@types/express" "*"
-
 "@types/cors@^2.8.6":
   version "2.8.6"
   resolved "https://registry.yarnpkg.com/@types/cors/-/cors-2.8.6.tgz#cfaab33c49c15b1ded32f235111ce9123009bd02"
@@ -90,10 +83,10 @@
     "@types/bson" "*"
     "@types/node" "*"
 
-"@types/mongoose@^5.7.31":
-  version "5.7.31"
-  resolved "https://registry.yarnpkg.com/@types/mongoose/-/mongoose-5.7.31.tgz#1076167766aa33733563746b9b67ff5fdb761825"
-  integrity sha512-pC9CHR/gjAbGDC4NUNkJh4+EpDhoCNkSOA8a017wltorOwpqGu674nGdxGn1aP2w/DsRrSRtdrrwZnUaTmzRkQ==
+"@types/mongoose@^5.7.32":
+  version "5.7.32"
+  resolved "https://registry.yarnpkg.com/@types/mongoose/-/mongoose-5.7.32.tgz#66265946d07a3418626843e7e93a00995675adb2"
+  integrity sha512-o1qijffQipTtYMJEYF8BOd+D8fy6ZGtGKP654udSEp6wysU3r1O2T8wHSP9QIC//QwQgKQGolu2y9vc9KXaq4w==
   dependencies:
     "@types/mongodb" "*"
     "@types/node" "*"
@@ -118,6 +111,23 @@
     "@types/express" "*"
     "@types/passport" "*"
     "@types/passport-oauth2" "*"
+
+"@types/passport-google-oauth20@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@types/passport-google-oauth20/-/passport-google-oauth20-2.0.3.tgz#f554ff6d39f395acff3f1d762e54462194dac8da"
+  integrity sha512-6EUEGzEg4acwowvgR/yVZIj8S2Kkwc6JmlY2/wnM1wJHNz20o7s1TIGrxnah8ymLgJasYDpy95P3TMMqlmetPw==
+  dependencies:
+    "@types/express" "*"
+    "@types/passport" "*"
+    "@types/passport-oauth2" "*"
+
+"@types/passport-linkedin-oauth2@^1.5.1":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@types/passport-linkedin-oauth2/-/passport-linkedin-oauth2-1.5.1.tgz#d3885159c76f9bae6aee3078eae964b9145d6836"
+  integrity sha512-mkRm6oO72IolnXCVDw7ZJ2gsRSPXXjdyXSLgMyNfiynUoJk5QZ/hUWcb3Tfx7A0p5LsNnVbr210Docn3OC6Q6A==
+  dependencies:
+    "@types/express" "*"
+    "@types/passport" "*"
 
 "@types/passport-oauth2@*":
   version "1.4.9"
@@ -305,14 +315,6 @@ content-type@~1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/content-type/-/content-type-1.0.4.tgz#e138cc75e040c727b1966fe5e5f8c9aee256fe3b"
   integrity sha512-hIP3EEPs8tB9AT1L+NUqtwOAps4mk2Zob89MWXMHjHWg9milF/j4osnnQLXBCBFBk/tvIG/tUc9mOUJiPBhPXA==
-
-cookie-parser@^1.4.5:
-  version "1.4.5"
-  resolved "https://registry.yarnpkg.com/cookie-parser/-/cookie-parser-1.4.5.tgz#3e572d4b7c0c80f9c61daf604e4336831b5d1d49"
-  integrity sha512-f13bPUj/gG/5mDr+xLmSxxDsB9DQiTIfhJS/sqjrmfAWiAN+x2O4i/XguTL9yDZ+/IFDanJ+5x7hC4CXT9Tdzw==
-  dependencies:
-    cookie "0.4.0"
-    cookie-signature "1.0.6"
 
 cookie-signature@1.0.6:
   version "1.0.6"
@@ -972,6 +974,20 @@ passport-github@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/passport-github/-/passport-github-1.1.0.tgz#8ce1e3fcd61ad7578eb1df595839e4aea12355d4"
   integrity sha1-jOHj/NYa11eOsd9ZWDnkrqEjVdQ=
+  dependencies:
+    passport-oauth2 "1.x.x"
+
+passport-google-oauth20@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/passport-google-oauth20/-/passport-google-oauth20-2.0.0.tgz#0d241b2d21ebd3dc7f2b60669ec4d587e3a674ef"
+  integrity sha512-KSk6IJ15RoxuGq7D1UKK/8qKhNfzbLeLrG3gkLZ7p4A6DBCcv7xpyQwuXtWdpyR0+E0mwkpjY1VfPOhxQrKzdQ==
+  dependencies:
+    passport-oauth2 "1.x.x"
+
+passport-linkedin-oauth2@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/passport-linkedin-oauth2/-/passport-linkedin-oauth2-2.0.0.tgz#c320374baa44c1412a9b023590d1d0c1c77cfe73"
+  integrity sha512-PnSeq2HzFQ/y1/p2RTF/kG2zhJ7kwGVg4xO3E+JNxz2aI0pFJGAqC503FVpUksYbhQdNhL6QYlK9qrEXD7ZYCg==
   dependencies:
     passport-oauth2 "1.x.x"
 

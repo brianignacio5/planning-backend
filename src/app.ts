@@ -6,9 +6,10 @@ import loggerMiddleware from "./middleware/logger";
 import { connectToDB } from "./dbConnection";
 import session from "express-session";
 import githubStrategy from "./middleware/githubStrategy";
+import googleStrategy from "./middleware/googleStrategy";
+import linkedInStrategy from "./middleware/linkedInStrategy";
 import config from "./config/config";
 import cors from "cors";
-import cookieParser from "cookie-parser";
 
 class PlanningApp {
   public App: Application;
@@ -44,7 +45,6 @@ class PlanningApp {
   }
 
   setPassport() {
-    this.App.use(cookieParser());
     this.App.use(session({
       secret: config.jwtSecret,
       resave: true,
@@ -54,6 +54,8 @@ class PlanningApp {
       }
     }));
     Passport.use(githubStrategy);
+    Passport.use(googleStrategy);
+    Passport.use(linkedInStrategy);
     Passport.serializeUser(function(user, done) {
       done(null, user);
     });
