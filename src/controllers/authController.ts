@@ -5,6 +5,7 @@ import { User } from "../types/user";
 import jwt from "jsonwebtoken";
 import config from "../config/config";
 import Passport from "passport";
+import boardModel from "../models/board";
 
 function createToken(user: User) {
   return jwt.sign(
@@ -31,6 +32,7 @@ export default class AuthController implements IController {
     this.router.get(`${this.path}/logout`, this.logout);
     this.router.post(`${this.path}/signin`, this.login);
     this.router.post(`${this.path}/signup`, this.register);
+    this.router.delete(`${this.path}/:id`, this.deleteUser);
     this.router.get(
       `${this.path}/github`,
       this.saveUrlMiddleware,
@@ -141,4 +143,24 @@ export default class AuthController implements IController {
     }
     next();
   };
+
+  private deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.params.id) {
+      return res.status(400).json({ msg: "Invalid id" });
+    }
+    if (!req.body.email || !req.body.password) {
+      return res.status(400).json({ msg: "Please submit email and password" });
+    }
+    const user = await userModel.findById(req.params.id).exec();
+    if (!user) {
+      return res.status(400).json({ msg: "The user doesn't exist." });
+    }
+
+    const isMatch = await user.comparePassword(req.body.password);
+    if (isMatch) {
+      const deletedUser = await userModel.findByIdAndDelete(req.params.id).exec();
+      const board = await boardModel.deleteMany({ user: deletedUser?._id }).exec();
+    }
+    return res.status(400).json({ msg: "Email or password are incorrect" });
+  }
 }

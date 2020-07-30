@@ -2,6 +2,7 @@ import { Document } from "mongoose";
 
 export interface User extends Document {
   accessToken: string;
+  boards: string[];
   comparePassword: (password: string) => Promise<Boolean>;
   createdOn: Date;
   email: string;

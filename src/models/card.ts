@@ -2,8 +2,8 @@ import { model, Schema } from "mongoose";
 import { Card } from "../types/card";
 
 const cardSchema = new Schema({
-  assignee: {
-    ref: "User",
+  board: {
+    ref: "Board",
     type: Schema.Types.ObjectId,
   },
   description: String,

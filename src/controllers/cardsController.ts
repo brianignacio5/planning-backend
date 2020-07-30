@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response, Router } from "express";
 import IController from "./IController";
+import boardModel from "../models/board";
 import cardModel from "../models/card";
 import HttpException from "../types/httpException";
 import { Card } from "../types/card";
@@ -21,10 +22,10 @@ export default class CardController implements IController {
     next: NextFunction
   ) => {
     try {
-      const userId = req.body.userId;
-      let cardQuery = userId
-        ? cardModel.find({ assignee: userId })
-        : cardModel.find({});
+      const boardId = req.body.boardId;
+      let cardQuery = boardId
+        ? cardModel.find({ board: boardId })
+        : cardModel.find();
       const cards = await cardQuery.exec();
       cards
         ? res.status(201).send(cards)
@@ -43,6 +44,11 @@ export default class CardController implements IController {
       const cardData: Card = req.body;
       const newCard = new cardModel(cardData);
       const savedCard = await newCard.save();
+      if (savedCard) {
+        await boardModel.findByIdAndUpdate(savedCard.board, {
+          $push: { cards: savedCard._id }
+        }, { new: true });
+      }
       savedCard
         ? res.status(201).send(savedCard)
         : next(new HttpException(404, new Error("Error saving card")));
@@ -59,9 +65,18 @@ export default class CardController implements IController {
     try {
       const id = req.params.id;
       const modifiedCard: Card = req.body;
+      const oldCard = await cardModel.findById(id).exec();
       const requestedCard = await cardModel
         .findByIdAndUpdate(id, modifiedCard, { new: true })
         .exec();
+      if (oldCard?.board !== requestedCard?.board) {
+        await boardModel.findByIdAndUpdate(requestedCard?.board, {
+          $push: { cards: requestedCard?._id }
+        }, { new: true });
+        await boardModel.findByIdAndUpdate(oldCard?.board, {
+          $pullAll: { cards: [requestedCard?._id] }
+        }, { new: true });
+      }
       requestedCard
         ? res.status(201).send(requestedCard)
         : next(new HttpException(404, new Error("Card has not been modified")));
