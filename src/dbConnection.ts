@@ -4,6 +4,7 @@ import config from "./config/config";
 export async function connectToDB() {
   try {
     const dbOptions: mongoose.ConnectionOptions = {
+      useCreateIndex: true,
       useFindAndModify: false,
       useNewUrlParser: true,
       useUnifiedTopology: true,

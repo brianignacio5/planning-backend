@@ -7,11 +7,11 @@ const userCommentSchema = new Schema({
     type: Schema.Types.ObjectId,
   },
   content: String,
-  createdOn: Date,
   createdBy: {
     ref: "User",
     type: Schema.Types.ObjectId,
   },
+  createdOn: Date,
 });
 
 const userCommentModel = model<UserComment>("Comment", userCommentSchema);

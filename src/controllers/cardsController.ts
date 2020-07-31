@@ -4,6 +4,8 @@ import boardModel from "../models/board";
 import cardModel from "../models/card";
 import HttpException from "../types/httpException";
 import { Card } from "../types/card";
+import userCommentModel from "../models/userComments";
+import { isValidObjectId } from "mongoose";
 
 export default class CardController implements IController {
   public path = "/card";
@@ -26,7 +28,15 @@ export default class CardController implements IController {
       let cardQuery = boardId
         ? cardModel.find({ board: boardId })
         : cardModel.find();
-      const cards = await cardQuery.exec();
+      const cards = await cardQuery.populate({
+        path: "comments",
+        model: "Comment",
+        populate: {
+          path: "createdBy",
+          model: "User",
+          select: "name picture -_id"
+        },
+      }).exec();
       cards
         ? res.status(201).send(cards)
         : next(new HttpException(404, new Error("Cards not found")));
@@ -63,6 +73,9 @@ export default class CardController implements IController {
     next: NextFunction
   ) => {
     try {
+      if (!req.params.id || !isValidObjectId(req.params.id)) {
+        return res.status(400).json({ msg: "Invalid id" });
+      }
       const id = req.params.id;
       const modifiedCard: Card = req.body;
       const oldCard = await cardModel.findById(id).exec();
@@ -91,10 +104,14 @@ export default class CardController implements IController {
     next: NextFunction
   ) => {
     try {
+      if (!req.params.id || !isValidObjectId(req.params.id)) {
+        return res.status(400).json({ msg: "Invalid id" });
+      }
       const id = req.params.id;
+      const commentsResult = await userCommentModel.deleteMany({ card: id }).exec();
       const result = await cardModel.findByIdAndDelete(id);
       result
-        ? res.status(201).send(result)
+        ? res.status(201).send({ result, commentsResult })
         : next(new HttpException(404, new Error("Error deleting card")));
     } catch (error) {
       next(new HttpException(404, error));

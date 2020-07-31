@@ -6,10 +6,14 @@ const cardSchema = new Schema({
     ref: "Board",
     type: Schema.Types.ObjectId,
   },
+  comments: [{
+    ref: "Comment",
+    type: Schema.Types.ObjectId
+  }],
+  createdOn: Date,
   description: String,
   picture: String,
   title: String,
-  createdOn: Date,
 });
 
 const cardModel = model<Card>("Card", cardSchema);
