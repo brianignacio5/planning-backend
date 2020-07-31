@@ -29,7 +29,6 @@ export default new Strategy(
       await newUser.save();
       return done(undefined, newUser);
     } catch (error) {
-      console.log(error);
       return done(error);
     }
   }

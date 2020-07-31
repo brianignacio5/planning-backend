@@ -10,16 +10,18 @@ import cardModel from "../models/card";
 import userCommentModel from "../models/userComments";
 import HttpException from "../types/httpException";
 import { isValidObjectId } from "mongoose";
+import jwtTokenData from "../types/jwtTokenData";
 
 function createToken(user: User) {
+  const tokenData: jwtTokenData = {
+    accessToken: user.accessToken,
+    email: user.email,
+    githubId: user.githubId,
+    id: user._id,
+    refreshToken: user.refreshToken,
+  }
   return jwt.sign(
-    {
-      accessToken: user.accessToken,
-      email: user.email,
-      githubId: user.githubId,
-      id: user._id,
-      refreshToken: user.refreshToken,
-    },
+    tokenData,
     config.jwtSecret,
     {
       expiresIn: 86400,

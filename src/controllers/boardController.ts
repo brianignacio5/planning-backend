@@ -6,6 +6,7 @@ import HttpException from "../types/httpException";
 import userModel from "../models/user";
 import userCommentModel from "../models/userComments";
 import { isValidObjectId } from "mongoose";
+import isAuthenticated from "../middleware/isAuthenticated";
 
 export default class BoardController implements IController {
   public path = "/board";
@@ -13,7 +14,7 @@ export default class BoardController implements IController {
 
   constructor() {
     this.router.get(this.path, this.getAllBoards);
-    this.router.post(this.path, this.createBoard);
+    this.router.post(this.path, isAuthenticated, this.createBoard);
     this.router.delete(`${this.path}/:id`, this.deleteBoard);
   }
 
