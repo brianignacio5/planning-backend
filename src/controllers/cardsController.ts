@@ -78,13 +78,18 @@ export default class CardController implements IController {
       }
       const id = req.params.id;
       const modifiedCard: Card = req.body;
+      const destBoardCardIndex = req.body.insertIndex;
+      console.log(destBoardCardIndex);
       const oldCard = await cardModel.findById(id).exec();
       const requestedCard = await cardModel
         .findByIdAndUpdate(id, modifiedCard, { new: true })
         .exec();
       if (oldCard?.board !== requestedCard?.board) {
         await boardModel.findByIdAndUpdate(requestedCard?.board, {
-          $push: { cards: requestedCard?._id }
+          $push: { cards: {
+            $each: [requestedCard?._id],
+            $position: destBoardCardIndex
+          } }
         }, { new: true });
         await boardModel.findByIdAndUpdate(oldCard?.board, {
           $pullAll: { cards: [requestedCard?._id] }

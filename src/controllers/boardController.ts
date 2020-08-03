@@ -24,7 +24,7 @@ export default class BoardController implements IController {
     next: NextFunction
   ) => {
     try {
-      const userId = req.body.userId;
+      const userId = req.body.user;
       const boardQuery = userId
         ? boardModel.find({ user: userId })
         : boardModel.find();
@@ -98,7 +98,7 @@ export default class BoardController implements IController {
         await userModel.findByIdAndUpdate(
           result.user,
           {
-            $pullAll: { boards: result._id },
+            $pullAll: { boards: [result._id] },
           },
           { new: true }
         );
