@@ -6,12 +6,14 @@ import HttpException from "../types/httpException";
 import { Card } from "../types/card";
 import userCommentModel from "../models/userComments";
 import { isValidObjectId } from "mongoose";
+import isAuthenticated from "../middleware/isAuthenticated";
 
 export default class CardController implements IController {
   public path = "/card";
   public router = Router();
 
   constructor() {
+    this.router.use(this.path, isAuthenticated);
     this.router.get(this.path, this.getAllCards);
     this.router.post(this.path, this.createCard);
     this.router.put(`${this.path}/:id`, this.updateCard);
@@ -28,15 +30,17 @@ export default class CardController implements IController {
       let cardQuery = boardId
         ? cardModel.find({ board: boardId })
         : cardModel.find();
-      const cards = await cardQuery.populate({
-        path: "comments",
-        model: "Comment",
-        populate: {
-          path: "createdBy",
-          model: "User",
-          select: "name picture -_id"
-        },
-      }).exec();
+      const cards = await cardQuery
+        .populate({
+          path: "comments",
+          model: "Comment",
+          populate: {
+            path: "createdBy",
+            model: "User",
+            select: "name picture -_id",
+          },
+        })
+        .exec();
       cards
         ? res.status(201).send(cards)
         : next(new HttpException(404, new Error("Cards not found")));
@@ -55,9 +59,13 @@ export default class CardController implements IController {
       const newCard = new cardModel(cardData);
       const savedCard = await newCard.save();
       if (savedCard) {
-        await boardModel.findByIdAndUpdate(savedCard.board, {
-          $push: { cards: savedCard._id }
-        }, { new: true });
+        await boardModel.findByIdAndUpdate(
+          savedCard.board,
+          {
+            $push: { cards: savedCard._id },
+          },
+          { new: true }
+        );
       }
       savedCard
         ? res.status(201).send(savedCard)
@@ -79,21 +87,36 @@ export default class CardController implements IController {
       const id = req.params.id;
       const modifiedCard: Card = req.body;
       const destBoardCardIndex = req.body.insertIndex;
-      console.log(destBoardCardIndex);
       const oldCard = await cardModel.findById(id).exec();
       const requestedCard = await cardModel
         .findByIdAndUpdate(id, modifiedCard, { new: true })
         .exec();
-      if (oldCard?.board !== requestedCard?.board) {
-        await boardModel.findByIdAndUpdate(requestedCard?.board, {
-          $push: { cards: {
-            $each: [requestedCard?._id],
-            $position: destBoardCardIndex
-          } }
-        }, { new: true });
-        await boardModel.findByIdAndUpdate(oldCard?.board, {
-          $pullAll: { cards: [requestedCard?._id] }
-        }, { new: true });
+      if (
+        oldCard &&
+        requestedCard &&
+        oldCard.board
+          .toString()
+          .localeCompare(requestedCard.board.toString()) !== 0
+      ) {
+        await boardModel.findByIdAndUpdate(
+          requestedCard?.board,
+          {
+            $push: {
+              cards: {
+                $each: [requestedCard?._id],
+                $position: destBoardCardIndex,
+              },
+            },
+          },
+          { new: true }
+        );
+        await boardModel.findByIdAndUpdate(
+          oldCard?.board,
+          {
+            $pullAll: { cards: [requestedCard?._id] },
+          },
+          { new: true }
+        );
       }
       requestedCard
         ? res.status(201).send(requestedCard)
@@ -113,7 +136,9 @@ export default class CardController implements IController {
         return res.status(400).json({ msg: "Invalid id" });
       }
       const id = req.params.id;
-      const commentsResult = await userCommentModel.deleteMany({ card: id }).exec();
+      const commentsResult = await userCommentModel
+        .deleteMany({ card: id })
+        .exec();
       const result = await cardModel.findByIdAndDelete(id);
       result
         ? res.status(201).send({ result, commentsResult })

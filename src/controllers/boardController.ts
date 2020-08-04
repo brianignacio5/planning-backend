@@ -13,8 +13,9 @@ export default class BoardController implements IController {
   public router = Router();
 
   constructor() {
+    this.router.use(this.path, isAuthenticated);
     this.router.get(this.path, this.getAllBoards);
-    this.router.post(this.path, isAuthenticated, this.createBoard);
+    this.router.post(this.path, this.createBoard);
     this.router.delete(`${this.path}/:id`, this.deleteBoard);
   }
 

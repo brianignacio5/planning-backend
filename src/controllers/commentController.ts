@@ -5,12 +5,14 @@ import { UserComment } from "../types/userComment";
 import userCommentModel from "../models/userComments";
 import cardModel from "../models/card";
 import { isValidObjectId } from "mongoose";
+import isAuthenticated from "../middleware/isAuthenticated";
 
 export default class CommentController implements IController {
   public path = "/comment";
   public router = Router();
 
   constructor() {
+    this.router.use(this.path, isAuthenticated);
     this.router.get(this.path, this.getAllComments);
     this.router.post(this.path, this.createComment);
     this.router.put(`${this.path}/:id`, this.updateComment);
@@ -42,20 +44,22 @@ export default class CommentController implements IController {
     next: NextFunction
   ) => {
     try {
-      const commmentData: UserComment = req.body;
-      const newComment = new userCommentModel(commmentData);
+      const commentData: UserComment = req.body;
+      commentData.createdBy = req.body.user;
+      const newComment = new userCommentModel(commentData);
       const savedComment = await newComment.save();
-      if (savedComment) {
+      const commentWithUser = await savedComment.populate("createdBy", "name picture").execPopulate();
+      if (commentWithUser) {
         await cardModel.findByIdAndUpdate(
-          savedComment.card,
+          commentWithUser.card,
           {
-            $push: { comments: savedComment._id },
+            $push: { comments: commentWithUser._id },
           },
           { new: true }
         );
       }
-      savedComment
-        ? res.status(201).send(savedComment)
+      commentWithUser
+        ? res.status(201).send(commentWithUser)
         : next(new HttpException(404, new Error("Can't save new comment")));
     } catch (error) {
       next(new HttpException(404, error));
