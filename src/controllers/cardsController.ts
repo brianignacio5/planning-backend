@@ -37,7 +37,7 @@ export default class CardController implements IController {
           populate: {
             path: "createdBy",
             model: "User",
-            select: "name picture -_id",
+            select: "name picture email -_id",
           },
         })
         .exec();

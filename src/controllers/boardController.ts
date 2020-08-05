@@ -38,7 +38,7 @@ export default class BoardController implements IController {
             populate: {
               path: "createdBy",
               model: "User",
-              select: "name picture -_id",
+              select: "name picture email -_id",
             },
           },
         })

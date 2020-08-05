@@ -93,7 +93,7 @@ export default class AuthController implements IController {
               populate: {
                 path: "createdBy",
                 model: "User",
-                select: "name picture -_id"
+                select: "name picture email -_id"
               },
             },
           },
@@ -128,6 +128,11 @@ export default class AuthController implements IController {
             populate: {
               path: "comments",
               model: "Comment",
+              populate: {
+                path: "createdBy",
+                model: "User",
+                select: "name picture email -_id"
+              },
             },
           },
         })
@@ -167,6 +172,11 @@ export default class AuthController implements IController {
             populate: {
               path: "comments",
               model: "Comment",
+              populate: {
+                path: "createdBy",
+                model: "User",
+                select: "name picture email -_id"
+              },
             },
           },
         })
@@ -178,6 +188,7 @@ export default class AuthController implements IController {
       if (isMatch) {
         const planningJwt = {
           name: user.name || user.email,
+          email: user.email,
           picture: user.picture,
           token: createToken(user),
         };
@@ -194,6 +205,7 @@ export default class AuthController implements IController {
     const receivedUser = req.user as User;
     const planningJwt = {
       name: receivedUser.name,
+      email: receivedUser.email,
       picture: receivedUser.picture,
       token: createToken(receivedUser),
     };

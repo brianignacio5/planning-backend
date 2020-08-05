@@ -29,7 +29,7 @@ export default class CommentController implements IController {
       let commentQuery = cardId
         ? userCommentModel.find({ card: cardId })
         : userCommentModel.find();
-      const comments = await commentQuery.populate("createdBy", "name picture").exec();
+      const comments = await commentQuery.populate("createdBy", "name picture email -_id").exec();
       comments
         ? res.status(201).send(comments)
         : next(new HttpException(404, new Error("Comments not found")));
@@ -48,7 +48,7 @@ export default class CommentController implements IController {
       commentData.createdBy = req.body.user;
       const newComment = new userCommentModel(commentData);
       const savedComment = await newComment.save();
-      const commentWithUser = await savedComment.populate("createdBy", "name picture").execPopulate();
+      const commentWithUser = await savedComment.populate("createdBy", "name picture email -_id").execPopulate();
       if (commentWithUser) {
         await cardModel.findByIdAndUpdate(
           commentWithUser.card,
