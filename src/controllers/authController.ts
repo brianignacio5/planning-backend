@@ -5,9 +5,6 @@ import { User } from "../types/user";
 import jwt from "jsonwebtoken";
 import config from "../config/config";
 import Passport from "passport";
-import boardModel from "../models/board";
-import cardModel from "../models/card";
-import userCommentModel from "../models/userComments";
 import HttpException from "../types/httpException";
 import { isValidObjectId } from "mongoose";
 import jwtTokenData from "../types/jwtTokenData";
@@ -19,14 +16,10 @@ function createToken(user: User) {
     githubId: user.githubId,
     id: user._id,
     refreshToken: user.refreshToken,
-  }
-  return jwt.sign(
-    tokenData,
-    config.jwtSecret,
-    {
-      expiresIn: 86400,
-    }
-  );
+  };
+  return jwt.sign(tokenData, config.jwtSecret, {
+    expiresIn: 86400,
+  });
 }
 
 export default class AuthController implements IController {
@@ -36,6 +29,7 @@ export default class AuthController implements IController {
   constructor() {
     this.router.get(this.path, this.redirectHome);
     this.router.get(`${this.path}/users`, this.listUsers);
+    this.router.put(`${this.path}/user`, this.updateUser);
     this.router.get(`${this.path}/logout`, this.logout);
     this.router.post(`${this.path}/signin`, this.login);
     this.router.post(`${this.path}/signup`, this.register);
@@ -80,25 +74,7 @@ export default class AuthController implements IController {
     next: NextFunction
   ) => {
     try {
-      const users = await userModel
-        .find()
-        .populate({
-          path: "boards",
-          populate: {
-            path: "cards",
-            model: "Card",
-            populate: {
-              path: "comments",
-              model: "Comment",
-              populate: {
-                path: "createdBy",
-                model: "User",
-                select: "name picture email -_id"
-              },
-            },
-          },
-        })
-        .exec();
+      const users = await userModel.find().exec();
       users
         ? res.status(201).send(users)
         : next(new HttpException(404, new Error("No users")));
@@ -106,6 +82,30 @@ export default class AuthController implements IController {
       next(new HttpException(404, error));
     }
   };
+
+  private updateUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      if (!req.user) {
+        next("User not found");
+        return;
+      }
+      const dbUser = req.user as User;
+      if (!req.body.email || !req.body.password) {
+        return res
+          .status(400)
+          .json({ msg: "Please submit email and password" });
+      }
+      const userData = req.body;
+      const modifiedUser = await userModel.findByIdAndUpdate(dbUser._id, userData, { new: true }).exec();
+      modifiedUser ? res.status(201).send(modifiedUser): next(new HttpException(404, new Error("user not modified")));
+    } catch (error) {
+      next(new HttpException(404, error));
+    }
+  }
 
   private register = async (
     req: Request,
@@ -118,25 +118,7 @@ export default class AuthController implements IController {
           .status(400)
           .json({ msg: "Please submit email and password" });
       }
-      const user = await userModel
-        .findOne({ email: req.body.email })
-        .populate({
-          path: "boards",
-          populate: {
-            path: "cards",
-            model: "Card",
-            populate: {
-              path: "comments",
-              model: "Comment",
-              populate: {
-                path: "createdBy",
-                model: "User",
-                select: "name picture email -_id"
-              },
-            },
-          },
-        })
-        .exec();
+      const user = await userModel.findOne({ email: req.body.email }).exec();
       if (user) {
         return res.status(400).json({ json: "User already exists" });
       }
@@ -162,25 +144,7 @@ export default class AuthController implements IController {
           .status(400)
           .json({ msg: "Please submit email and password" });
       }
-      const user = await userModel
-        .findOne({ email: req.body.email })
-        .populate({
-          path: "boards",
-          populate: {
-            path: "cards",
-            model: "Card",
-            populate: {
-              path: "comments",
-              model: "Comment",
-              populate: {
-                path: "createdBy",
-                model: "User",
-                select: "name picture email -_id"
-              },
-            },
-          },
-        })
-        .exec();
+      const user = await userModel.findOne({ email: req.body.email }).exec();
       if (!user) {
         return res.status(400).json({ msg: "The user doesn't exist." });
       }
@@ -257,35 +221,8 @@ export default class AuthController implements IController {
         const deletedUser = await userModel
           .findByIdAndDelete(req.params.id)
           .exec();
-        const boardsId = (
-          await boardModel.find({ user: user._id }).select("_id").exec()
-        ).map((b) => b._id);
-        const cardsId = (
-          await cardModel
-            .find({ board: { $in: boardsId } })
-            .select("_id")
-            .exec()
-        ).map((c) => c._id);
-        const userCommentsResult = await userCommentModel
-          .deleteMany({ user: deletedUser?._id })
-          .exec();
-        const commentsResult = await userCommentModel
-          .deleteMany({ card: { $in: cardsId } })
-          .exec();
-        const cardsResult = await cardModel
-          .deleteMany({ board: { $in: boardsId } })
-          .exec();
-        const board = await boardModel
-          .deleteMany({ user: deletedUser?._id })
-          .exec();
 
-        return res.status(200).send({
-          board,
-          cardsResult,
-          commentsResult,
-          deletedUser,
-          userCommentsResult,
-        });
+        return res.status(200).send(deletedUser);
       }
       return res.status(400).json({ msg: "Email or password are incorrect" });
     } catch (error) {

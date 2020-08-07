@@ -3,8 +3,8 @@ import Board from "../types/board";
 
 const boardSchema = new Schema({
   name: String,
-  user: {
-    ref: "User",
+  project: {
+    ref: "Project",
     type: Schema.Types.ObjectId,
   },
   cards: [

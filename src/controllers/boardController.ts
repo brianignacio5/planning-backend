@@ -3,7 +3,7 @@ import { NextFunction, Request, Response, Router } from "express";
 import boardModel from "../models/board";
 import cardModel from "../models/card";
 import HttpException from "../types/httpException";
-import userModel from "../models/user";
+import projectModel from "../models/project";
 import userCommentModel from "../models/userComments";
 import { isValidObjectId } from "mongoose";
 import isAuthenticated from "../middleware/isAuthenticated";
@@ -25,9 +25,9 @@ export default class BoardController implements IController {
     next: NextFunction
   ) => {
     try {
-      const userId = req.body.user;
-      const boardQuery = userId
-        ? boardModel.find({ user: userId })
+      const projectId = req.body.project;
+      const boardQuery = projectId
+        ? boardModel.find({ project: projectId })
         : boardModel.find();
       const boards = await boardQuery
         .populate({
@@ -61,8 +61,8 @@ export default class BoardController implements IController {
       const newBoard = new boardModel(boardData);
       const savedBoard = await newBoard.save();
       if (savedBoard) {
-        await userModel.findByIdAndUpdate(
-          savedBoard.user,
+        await projectModel.findByIdAndUpdate(
+          savedBoard.project,
           {
             $push: { boards: savedBoard._id },
           },
@@ -96,8 +96,8 @@ export default class BoardController implements IController {
       const cardsResult = await cardModel.deleteMany({ board: boardId }).exec();
       const result = await boardModel.findByIdAndDelete(boardId).exec();
       if (result) {
-        await userModel.findByIdAndUpdate(
-          result.user,
+        await projectModel.findByIdAndUpdate(
+          result.project,
           {
             $pullAll: { boards: [result._id] },
           },

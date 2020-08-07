@@ -3,12 +3,6 @@ import { User } from "../types/user";
 import bcrypt from "bcrypt";
 
 const userSchema = new Schema({
-  boards: [
-    {
-      ref: "Board",
-      type: Schema.Types.ObjectId
-    }
-  ],
   createdOn: Date,
   email: {
     unique: true,
