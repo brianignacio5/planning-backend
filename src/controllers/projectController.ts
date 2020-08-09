@@ -18,6 +18,7 @@ export default class ProjectController implements IController {
     this.router.get(this.path, this.getAllProjects);
     this.router.get(`${this.path}/:id`, this.getProjectById);
     this.router.post(this.path, this.createProject);
+    this.router.put(`${this.path}/:id`, this.updateProject);
     this.router.delete(`${this.path}/:id`, this.deleteProject);
   }
 
@@ -104,6 +105,27 @@ export default class ProjectController implements IController {
       savedProject
         ? res.status(201).send(savedProject)
         : next(new HttpException(404, new Error("Error creating project")));
+    } catch (error) {
+      next(new HttpException(404, error));
+    }
+  };
+
+  private updateProject = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const projectData: Project = req.body;
+      console.log(req.body);
+      const modifiedProject = await projectModel
+        .findByIdAndUpdate(req.params.id, projectData, { new: true })
+        .exec();
+      modifiedProject
+        ? res.status(201).send(modifiedProject)
+        : next(
+            new HttpException(404, new Error("Project has not been modified"))
+          );
     } catch (error) {
       next(new HttpException(404, error));
     }
