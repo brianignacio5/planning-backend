@@ -2,6 +2,10 @@ import { model, Schema } from "mongoose";
 import { Card } from "../types/card";
 
 const cardSchema = new Schema({
+  assignee: {
+    ref: "User",
+    type: Schema.Types.ObjectId
+  },
   board: {
     ref: "Board",
     type: Schema.Types.ObjectId,
@@ -12,6 +16,7 @@ const cardSchema = new Schema({
   }],
   createdOn: Date,
   description: String,
+  dueOn: Date,
   picture: String,
   title: String,
 });

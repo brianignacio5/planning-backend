@@ -15,6 +15,7 @@ export default class CardController implements IController {
   constructor() {
     this.router.use(this.path, isAuthenticated);
     this.router.get(this.path, this.getAllCards);
+    this.router.get(`${this.path}/user`, this.getAllUserCards);
     this.router.post(this.path, this.createCard);
     this.router.put(`${this.path}/:id`, this.updateCard);
     this.router.delete(`${this.path}/:id`, this.deleteCard);
@@ -40,6 +41,42 @@ export default class CardController implements IController {
             select: "name picture email -_id",
           },
         })
+        .populate({
+          path: "assignee",
+          model: "User",
+          select: "name picture email",
+        })
+        .exec();
+      cards
+        ? res.status(201).send(cards)
+        : next(new HttpException(404, new Error("Cards not found")));
+    } catch (error) {
+      next(new HttpException(404, error));
+    }
+  };
+
+  private getAllUserCards = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId = req.body.user;
+      if (!userId || !isValidObjectId(userId)) {
+        return res.status(400).json({ msg: "Invalid id" });
+      }
+      const cards = await cardModel
+        .find({ assignee: userId })
+        .populate({
+          path: "comments",
+          model: "Comment",
+          populate: {
+            path: "createdBy",
+            model: "User",
+            select: "name picture email -_id",
+          },
+        })
+        .populate("assignee")
         .exec();
       cards
         ? res.status(201).send(cards)

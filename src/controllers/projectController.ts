@@ -100,6 +100,7 @@ export default class ProjectController implements IController {
   ) => {
     try {
       const projectData: Project = req.body;
+      projectData.users = [req.body.user];
       const newProject = new projectModel(projectData);
       const savedProject = await newProject.save();
       savedProject
