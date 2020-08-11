@@ -8,6 +8,7 @@ import Passport from "passport";
 import HttpException from "../types/httpException";
 import { isValidObjectId } from "mongoose";
 import jwtTokenData from "../types/jwtTokenData";
+import isAuthenticated from "../middleware/isAuthenticated";
 
 function createToken(user: User) {
   const tokenData: jwtTokenData = {
@@ -29,7 +30,7 @@ export default class AuthController implements IController {
   constructor() {
     this.router.get(this.path, this.redirectHome);
     this.router.get(`${this.path}/users`, this.listUsers);
-    this.router.put(`${this.path}/user`, this.updateUser);
+    this.router.put(`${this.path}/user`, isAuthenticated, this.updateUser);
     this.router.get(`${this.path}/logout`, this.logout);
     this.router.post(`${this.path}/signin`, this.login);
     this.router.post(`${this.path}/signup`, this.register);
@@ -94,18 +95,52 @@ export default class AuthController implements IController {
         return;
       }
       const dbUser = req.user as User;
-      if (!req.body.email || !req.body.password) {
+      if (!req.body.email) {
         return res
           .status(400)
           .json({ msg: "Please submit email and password" });
       }
-      const userData = req.body;
-      const modifiedUser = await userModel.findByIdAndUpdate(dbUser._id, userData, { new: true }).exec();
-      modifiedUser ? res.status(201).send(modifiedUser): next(new HttpException(404, new Error("user not modified")));
+
+      interface userInfo {
+        email?: string;
+        name?: string;
+        password?: string;
+        picture?: string;
+      }
+      let userData: userInfo = {
+        email: req.body.email,
+        name: req.body.name,
+        picture: req.body.picture
+      };
+
+      if (req.body.oldPassword) {
+        const isMatch = await dbUser.comparePassword(req.body.oldPassword);
+        if (isMatch) {
+          userData.password = req.body.newPassword;
+        } else {
+          res.status(201).send({ error: "Old password is invalid"});
+          return;
+        }
+      }
+      const modifiedUser = await userModel
+        .findByIdAndUpdate(dbUser._id, userData, { new: true })
+        .exec();
+      if (modifiedUser) {
+        const planningJwt = {
+          name: modifiedUser.name || modifiedUser.email,
+          email: modifiedUser.email,
+          picture: modifiedUser.picture,
+          token: createToken(modifiedUser),
+        };
+        res.cookie("planningJwt", JSON.stringify(planningJwt));
+      }
+      modifiedUser
+        ? res.status(201).send(modifiedUser)
+        : next(new HttpException(404, new Error("user not modified")));
     } catch (error) {
       next(new HttpException(404, error));
     }
-  }
+  };
 
   private register = async (
     req: Request,
