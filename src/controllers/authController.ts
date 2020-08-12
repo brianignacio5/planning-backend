@@ -166,7 +166,8 @@ export default class AuthController implements IController {
         token: createToken(newUser),
       };
       res.cookie("planningJwt", JSON.stringify(planningJwt));
-      return res.redirect(config.FRONTEND_URL);
+      return res.sendFile(process.cwd() + "/views/frontend.html");
+      // return res.redirect(config.FRONTEND_URL);
     } catch (error) {
       next(new HttpException(404, error));
     }
@@ -192,7 +193,9 @@ export default class AuthController implements IController {
           token: createToken(user),
         };
         res.cookie("planningJwt", JSON.stringify(planningJwt));
-        return res.redirect(config.FRONTEND_URL);
+
+        return res.sendFile(process.cwd() + "/views/frontend.html");
+        // return res.redirect(config.FRONTEND_URL);
       }
       return res.status(400).json({ msg: "Email or password are incorrect" });
     } catch (error) {
@@ -209,7 +212,8 @@ export default class AuthController implements IController {
       token: createToken(receivedUser),
     };
     res.cookie("planningJwt", JSON.stringify(planningJwt));
-    return res.redirect(config.FRONTEND_URL);
+    return res.sendFile(process.cwd() + "/views/frontend.html");
+    // return res.redirect(config.FRONTEND_URL);
   };
 
   private logout = async (req: Request, res: Response) => {

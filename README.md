@@ -1,14 +1,9 @@
 # planning-backend
 
-This application is intended to serve as backend API for the planning app to provide the following services
+This application is intended to serve as backend API for the [Abilitare planning app](https://github.com/brianignacio5/planning) to provide the following services
 
-* Provide simple mail authentication and github OAuth to create users.
-* Implement JWT to carry user information
-* API to handle cards and user comments.
-
-TO-DO
-
-1. Implement Card CRUD API to handle cards information.
-2. Implement comments API associated with user information.
-3. Apply basic tests.
-4. Add JWT passport strategy to handle requests.
+* Provide simple mail authentication and github/Google/LinkedIn OAuth for login and register users.
+* Implement JWT to carry user information to frontend and route authentication.
+* API to handle projects, boards, user, authentication, cards and user comments.
+* Including the built [Abilitare planning app](https://github.com/brianignacio5/planning) to serve as frontend.
+* Add login and register static page.
